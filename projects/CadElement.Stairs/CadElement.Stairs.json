@@ -14,6 +14,7 @@
     "1.png"
   ],
   "fullDescription": "Build stairs with platform anf handrails.",
+  "stepFile": "stairs.asm.step",
   "features": [
     "Draw stairs with platfrom"
   ]

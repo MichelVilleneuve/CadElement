@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CadElement - CAD element generators</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header class="hero">
+        <div class="wrap">
+            <p class="eyebrow">CadElement · CAD element generators</p>
+            <h1>Generate stairs, ladders, floors and decks.</h1>
+            <p class="lead">Desktop apps built in Visual Studio that create CAD elements for you.</p>
+            <a class="btn" href="#apps">Browse the apps</a>
+        </div>
+    </header>
+
+    <section class="wrap tiles" id="elements">
+        <div class="tile"><svg viewBox="0 0 48 48"><path d="M6 42h10v-9h10v-9h10v-9h6"/></svg><span>Stairs</span></div>
+        <div class="tile"><svg viewBox="0 0 48 48"><path d="M16 6v36M32 6v36M16 14h16M16 24h16M16 34h16"/></svg><span>Ladders</span></div>
+        <div class="tile"><svg viewBox="0 0 48 48"><path d="M6 18l18-9 18 9-18 9zM6 18v8l18 9 18-9v-8"/></svg><span>Floors</span></div>
+        <div class="tile"><svg viewBox="0 0 48 48"><path d="M6 14h36M6 22h36M6 30h36M10 38h28M12 14v24M36 14v24"/></svg><span>Decks</span></div>
+    </section>
+
+    <main class="wrap" id="apps">
+        <div class="section-head">
+            <p class="eyebrow">The apps</p>
+            <h2>Built with Visual Studio.</h2>
+        </div>
+        <div id="filters" class="filters"></div>
+        <div id="grid" class="grid"></div>
+        <p id="empty" class="muted" hidden>No apps published yet.</p>
+    </main>
+
+    <footer class="wrap muted">
+        <a href="https://michelvilleneuve.github.io/">Michel Villeneuve</a>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
+    <script>loadProjects();</script>
+</body>
+</html>

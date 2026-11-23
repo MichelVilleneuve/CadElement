@@ -6,7 +6,6 @@
   "date": "2026-11-23",
   "github": "https://github.com/michelvilleneuve/CadElement.Ladders",
   "thumbnail": "thumbnail.png",
-  "stepFile": "ladder.asm.step",
   "tech": [
     "C#",
     "WPF"
@@ -15,5 +14,6 @@
     "1.png"
   ],
   "fullDescription": "Draw ladders with a safety cage.",
+  "stepFile": "ladder.asm.step",
   "features": []
 }

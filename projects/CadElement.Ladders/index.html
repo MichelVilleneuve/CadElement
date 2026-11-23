@@ -38,6 +38,14 @@
                 <div class="carousel-counter">1 of 1</div>
             </div>
         </div>
+        <!-- 3D Viewer -->
+        <div style="margin: 2rem 0;">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                <button id="view3dBtn" style="padding: 10px 18px; border-radius: 6px; border: 1px solid var(--accent, #185FA5); font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; font-family: inherit; background: var(--accent, #185FA5); color: var(--on-accent, #fff);">View in 3D</button>
+                <a href="ladder.asm.step" download style="padding: 10px 18px; border-radius: 6px; border: 1px solid var(--accent, #185FA5); font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; font-family: inherit; background: transparent; color: var(--accent, #185FA5);">Download STEP file</a>
+            </div>
+            <div id="viewer3d" hidden></div>
+        </div>
         <!-- Overview -->
         <div style="margin: 2rem 0;">
             <h2 style="font-size: 18px; font-weight: 500; margin-bottom: 1rem;">Overview</h2>
@@ -65,6 +73,8 @@
     </main>
 
     <script src="../../assets/js/script.js"></script>
+    <script src="../../assets/js/viewer.js"></script>
+    <script>StepViewer.init('viewer3d', 'view3dBtn', "ladder.asm.step");</script>
     <script>
         // Initialize carousel on this page
         new Carousel('projectCarousel');

@@ -1,0 +1,18 @@
+﻿{
+  "folder": "CadElement.Ladders",
+  "name": "CadElement.Ladders",
+  "type": "Visual Studio (C#/WPF)",
+  "description": "Draw ladders with a safety cage.",
+  "date": "2026-11-23",
+  "github": "https://github.com/michelvilleneuve/CadElement.Ladders",
+  "thumbnail": "thumbnail.png",
+  "tech": [
+    "C#",
+    "WPF"
+  ],
+  "screenshots": [
+    "1.png"
+  ],
+  "fullDescription": "Draw ladders with a safety cage.",
+  "features": []
+}

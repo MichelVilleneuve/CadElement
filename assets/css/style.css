@@ -1,4 +1,4 @@
-:root { --bg:#181b23; --panel:#1f232d; --text:#f2f4f8; --text-muted:#9aa3b2; --text-dim:#8a93a3;
+:root { --on-accent:#12151c; --bg:#181b23; --panel:#1f232d; --text:#f2f4f8; --text-muted:#9aa3b2; --text-dim:#8a93a3;
   --line:#2c3240; --accent:#8da2ff; --tag-bg:#262c44; --mono:ui-monospace,"Cascadia Mono",Consolas,monospace; }
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; line-height:1.5; }
@@ -47,3 +47,4 @@ h2 { font-size:clamp(28px,4vw,42px); font-weight:600; margin:0; letter-spacing:-
 .carousel-btn { position:absolute; top:50%; transform:translateY(-50%); border:0; background:rgba(0,0,0,.55); color:#fff; width:36px; height:36px; border-radius:50%; cursor:pointer; }
 .carousel-prev { left:10px; } .carousel-next { right:10px; }
 .carousel-counter { position:absolute; bottom:8px; right:10px; background:rgba(0,0,0,.6); color:#fff; font-size:12px; padding:2px 8px; border-radius:10px; }
+font-size:12px; padding:2px 8px; border-radius:10px; }

@@ -14,5 +14,7 @@
     "1.png"
   ],
   "fullDescription": "Build stairs with platform anf handrails.",
-  "features": []
+  "features": [
+    "Draw stairs with platfrom"
+  ]
 }

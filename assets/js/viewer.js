@@ -28,6 +28,7 @@ const StepViewer = (() => {
     });
   }
 
+  /* One Group per STEP part (mesh + edges), so a whole part can be hidden at once */
   function buildModel(THREE, result) {
     const group = new THREE.Group();
     for (const m of result.meshes) {
@@ -37,11 +38,95 @@ const StepViewer = (() => {
       g.setIndex(new THREE.BufferAttribute(Uint32Array.from(m.index.array), 1));
       if (!m.attributes.normal) g.computeVertexNormals();
       const color = m.color ? new THREE.Color(m.color[0], m.color[1], m.color[2]) : new THREE.Color(0x9aa7b8);
-      group.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, metalness: 0.15, roughness: 0.65, side: THREE.DoubleSide })));
-      group.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 30),
+      const part = new THREE.Group();
+      part.name = m.name || '';
+      part.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, metalness: 0.15, roughness: 0.65, side: THREE.DoubleSide })));
+      part.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 30),
         new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35 })));
+      group.add(part);
     }
     return group;
+  }
+
+  /* Group parts for the Parts list.
+     custom (optional) = { "Joists": ["joist"], "Studs": ["stud"] }  -> a part joins the first group
+     whose keyword appears in its name. Everything else is grouped by the first word of its name. */
+  function groupParts(model, custom) {
+    const rules = custom
+      ? Object.entries(custom).map(([label, kws]) => ({ label, kws: (kws || []).map(k => String(k).toLowerCase()) }))
+      : [];
+    const groups = new Map();
+    for (const part of model.children) {
+      const name = (part.name || '').trim();
+      const lower = name.toLowerCase();
+      const rule = rules.find(r => r.kws.some(k => k && lower.includes(k)));
+      let label;
+      if (rule) {
+        label = rule.label;
+      } else {
+        const word = (name.split(/[\s_\-:.]+/)[0] || '').replace(/\d+$/, '');
+        label = word ? word.charAt(0).toUpperCase() + word.slice(1) : 'Other';
+      }
+      const key = label.toLowerCase();
+      if (!groups.has(key)) groups.set(key, { label, parts: [] });
+      groups.get(key).parts.push(part);
+    }
+    return [...groups.values()];
+  }
+
+  /* Collapsible "Parts" panel with one checkbox per group */
+  function buildPanel(box, groups, render) {
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position:absolute;top:10px;left:10px;max-height:calc(100% - 50px);overflow:auto;min-width:180px;' +
+      'font-size:13px;color:var(--text,#222);background:var(--bg,#fff);border:1px solid var(--line,#ccc);border-radius:6px;';
+    const head = document.createElement('button');
+    head.type = 'button';
+    head.style.cssText = 'display:block;width:100%;text-align:left;padding:7px 10px;border:0;background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer;';
+    const body = document.createElement('div');
+    body.style.cssText = 'padding:0 10px 8px;';
+    let open = box.clientWidth >= 560;                 // start collapsed on small screens
+    const sync = () => { body.hidden = !open; head.textContent = (open ? '▾ ' : '▸ ') + 'Parts'; };
+    head.onclick = () => { open = !open; sync(); };
+
+    const rows = [];
+    const setAll = on => {
+      rows.forEach(r => { r.cb.checked = on; r.g.parts.forEach(p => { p.visible = on; }); });
+      render();
+    };
+    const tools = document.createElement('div');
+    tools.style.cssText = 'display:flex;gap:6px;margin:2px 0 6px;';
+    [['Show all', true], ['Hide all', false]].forEach(([text, on]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = text;
+      b.style.cssText = 'flex:1;padding:3px 6px;font:inherit;font-size:12px;cursor:pointer;color:inherit;background:transparent;border:1px solid var(--line,#ccc);border-radius:4px;';
+      b.onclick = () => setAll(on);
+      tools.append(b);
+    });
+    body.append(tools);
+
+    groups.forEach(g => {
+      const label = document.createElement('label');
+      label.style.cssText = 'display:flex;align-items:center;gap:6px;padding:2px 0;cursor:pointer;';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = true;
+      cb.style.accentColor = 'var(--accent,#185FA5)';
+      cb.onchange = () => { g.parts.forEach(p => { p.visible = cb.checked; }); render(); };
+      const text = document.createElement('span');
+      text.textContent = g.label;
+      const count = document.createElement('span');
+      count.textContent = g.parts.length;
+      count.style.cssText = 'margin-left:auto;opacity:.6;';
+      label.append(cb, text, count);
+      body.append(label);
+      rows.push({ cb, g });
+    });
+
+    sync();
+    panel.append(head, body);
+    box.append(panel);
+    return panel;
   }
 
   function frame(THREE, camera, controls, group) {
@@ -59,7 +144,7 @@ const StepViewer = (() => {
     controls.update();
   }
 
-  function init(boxId, btnId, stepUrl) {
+  function init(boxId, btnId, stepUrl, partGroups) {
     const box = document.getElementById(boxId);
     const btn = document.getElementById(btnId);
     if (!box || !btn) return;
@@ -135,6 +220,7 @@ const StepViewer = (() => {
         resize();
         frame(THREE, camera, controls, model);
         new ResizeObserver(resize).observe(box);
+        buildPanel(box, groupParts(model, partGroups), render);
 
         const reset = overlay('Reset view', 'top:10px;right:10px;cursor:pointer;padding:4px 10px;border-radius:4px;' +
           'border:1px solid var(--line,#ccc);background:var(--bg,#fff);');
@@ -154,6 +240,6 @@ const StepViewer = (() => {
     });
   }
 
-  return { init, buildModel, frame };
+  return { init, buildModel, groupParts, buildPanel, frame };
 })();
 if (typeof module !== 'undefined') module.exports = StepViewer;

@@ -16,6 +16,7 @@
   "fullDescription": "Build stairs with platform anf handrails.",
   "stepFile": "stairs.asm.step",
   "features": [
-    "Draw stairs with platfrom"
+    "Parametric model",
+    "Saved in STEP file."
   ]
 }

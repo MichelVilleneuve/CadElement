@@ -15,5 +15,8 @@
   ],
   "fullDescription": "Draw ladders with a safety cage.",
   "stepFile": "ladder.asm.step",
-  "features": []
+  "features": [
+    "Parametric model",
+    "Saved in STEP file."
+  ]
 }

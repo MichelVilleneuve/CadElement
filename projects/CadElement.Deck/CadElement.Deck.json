@@ -1,0 +1,19 @@
+﻿{
+  "folder": "CadElement.Deck",
+  "name": "CadElement.Deck - Plan-Driven Multibody Generator",
+  "type": "Visual Studio (C#/WPF)",
+  "description": "Draw your deck in 2d",
+  "date": "2026-11-26",
+  "github": "https://github.com/michelvilleneuve/CadElement.Deck",
+  "thumbnail": "thumbnail.png",
+  "tech": [
+    "C#",
+    "WPF"
+  ],
+  "screenshots": [
+    "1.png",
+    "2.png"
+  ],
+  "fullDescription": "Draw your deck in 2d",
+  "features": []
+}

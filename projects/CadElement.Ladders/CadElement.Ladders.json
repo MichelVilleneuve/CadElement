@@ -1,6 +1,6 @@
 ﻿{
   "folder": "CadElement.Ladders",
-  "name": "CadElement.Ladders",
+  "name": "CadElement.Ladders - parametric multibody generator",
   "type": "Visual Studio (C#/WPF)",
   "description": "Draw ladders with a safety cage.",
   "date": "2026-11-23",

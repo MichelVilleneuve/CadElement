@@ -15,5 +15,6 @@
     "2.png"
   ],
   "fullDescription": "Draw your deck in 2d",
+  "stepFile": "deck.asm.stp",
   "features": []
 }

@@ -37,10 +37,34 @@ const StepViewer = (() => {
       if (m.attributes.normal) g.setAttribute('normal', new THREE.Float32BufferAttribute(m.attributes.normal.array, 3));
       g.setIndex(new THREE.BufferAttribute(Uint32Array.from(m.index.array), 1));
       if (!m.attributes.normal) g.computeVertexNormals();
-      const color = m.color ? new THREE.Color(m.color[0], m.color[1], m.color[2]) : new THREE.Color(0x9aa7b8);
+      const mat = c => new THREE.MeshStandardMaterial({ color: c, metalness: 0.15, roughness: 0.65, side: THREE.DoubleSide });
+      const base = mat(m.color ? new THREE.Color(m.color[0], m.color[1], m.color[2]) : new THREE.Color(0x9aa7b8));
+      let material = base;
+
+      // Some files color individual faces instead of the whole part
+      const faces = (m.brep_faces || []).slice().sort((a, b) => a.first - b.first);
+      if (faces.some(f => f.color)) {
+        const mats = [base], index = new Map();
+        const total = m.index.array.length / 3;
+        let next = 0;
+        for (const f of faces) {
+          if (f.first > next) g.addGroup(next * 3, (f.first - next) * 3, 0);
+          let mi = 0;
+          if (f.color) {
+            const key = f.color.join(',');
+            if (!index.has(key)) { index.set(key, mats.length); mats.push(mat(new THREE.Color(f.color[0], f.color[1], f.color[2]))); }
+            mi = index.get(key);
+          }
+          g.addGroup(f.first * 3, (f.last - f.first + 1) * 3, mi);
+          next = f.last + 1;
+        }
+        if (next < total) g.addGroup(next * 3, (total - next) * 3, 0);
+        material = mats;
+      }
+
       const part = new THREE.Group();
       part.name = m.name || '';
-      part.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, metalness: 0.15, roughness: 0.65, side: THREE.DoubleSide })));
+      part.add(new THREE.Mesh(g, material));
       part.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 30),
         new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35 })));
       group.add(part);

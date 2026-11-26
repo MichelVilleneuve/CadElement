@@ -334,7 +334,7 @@ const StepViewer = (() => {
       } catch (err) {
         state = 'idle';
         box.replaceChildren();
-        overlay(err.message + ' You can still download the STEP file.', 'inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1rem;');
+        overlay(err.message, 'inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1rem;');
       } finally {
         btn.disabled = false;
       }

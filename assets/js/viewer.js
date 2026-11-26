@@ -24,8 +24,80 @@ const StepViewer = (() => {
         (ev.data && ev.data.success) ? resolve(ev.data) : reject(new Error('This STEP file could not be read.'));
       };
       w.onerror = () => { w.terminate(); reject(new Error('The STEP reader could not start.')); };
-      w.postMessage({ format: 'step', buffer: bytes, params: null }, [bytes.buffer]);
+      w.postMessage({ format: 'step', buffer: bytes, params: null });
     });
+  }
+
+  /* Some files (like the Deck) put several solids inside a named group and leave the solids unnamed.
+     Give each unnamed solid its group's name, so the Parts list can use it. */
+  function nameFromTree(result) {
+    (function walk(node) {
+      if (node.name && node.meshes && node.meshes.length) {
+        node.meshes.forEach(i => {
+          const m = result.meshes[i];
+          if (m && !m.name) { m.name = node.name; m.groupName = node.name; }
+        });
+      }
+      (node.children || []).forEach(walk);
+    })(result.root);
+  }
+
+  /* Some files store colors on the solids inside a group, which the reader library does not report.
+     Read them straight from the STEP text and match them to the meshes (only when the counts line up). */
+  function applyStepColors(result, textOrFn) {
+    const meshes = result.meshes;
+    if (!meshes.length || meshes.some(m => m.color || (m.brep_faces || []).some(f => f.color))) return false;
+    const text = typeof textOrFn === 'function' ? textOrFn() : textOrFn;
+
+    const re = /#(\d+)\s*=\s*(STYLED_ITEM|COLOUR_RGB|PRESENTATION_STYLE_ASSIGNMENT|SURFACE_STYLE_USAGE|SURFACE_SIDE_STYLE|SURFACE_STYLE_FILL_AREA|FILL_AREA_STYLE_COLOUR|FILL_AREA_STYLE|SHAPE_REPRESENTATION|ADVANCED_BREP_SHAPE_REPRESENTATION)\s*\(([^;]*)\)\s*;/g;
+    const refsOf = a => (a.match(/#\d+/g) || []).map(x => +x.slice(1));
+    const defs = new Map(), reps = [];
+    let m;
+    while ((m = re.exec(text))) {
+      if (m[2].endsWith('SHAPE_REPRESENTATION')) reps.push(refsOf(m[3]));
+      else defs.set(+m[1], { type: m[2], args: m[3] });
+    }
+
+    const memo = new Map();
+    const colorOf = (id, depth) => {
+      if (memo.has(id)) return memo.get(id);
+      const d = defs.get(id);
+      let c = null;
+      if (d && d.type === 'COLOUR_RGB') {
+        const v = d.args.split(',').slice(-3).map(Number);
+        if (v.length === 3 && v.every(Number.isFinite)) c = v;
+      } else if (d && depth < 10) {
+        for (const r of refsOf(d.args)) { c = colorOf(r, depth + 1); if (c) break; }
+      }
+      memo.set(id, c);
+      return c;
+    };
+
+    const solidColor = new Map();
+    defs.forEach(d => {
+      if (d.type !== 'STYLED_ITEM') return;
+      const refs = refsOf(d.args);
+      let c = null;
+      for (const r of refs.slice(0, -1)) { c = c || colorOf(r, 0); }
+      solidColor.set(refs[refs.length - 1], c);
+    });
+
+    // one list of solid colors per shape representation, in file order
+    const groups = [];
+    reps.forEach(items => {
+      const solids = items.filter(id => solidColor.has(id));
+      if (solids.length) groups.push(solids.map(id => solidColor.get(id)));
+    });
+
+    const leaves = [];
+    (function walk(n) {
+      if (n.meshes && n.meshes.length) leaves.push(n.meshes);
+      (n.children || []).forEach(walk);
+    })(result.root);
+
+    if (!groups.length || leaves.length !== groups.length || leaves.some((l, i) => l.length !== groups[i].length)) return false;
+    leaves.forEach((idxs, i) => idxs.forEach((mi, j) => { if (groups[i][j]) meshes[mi].color = groups[i][j]; }));
+    return true;
   }
 
   /* One Group per STEP part (mesh + edges), so a whole part can be hidden at once */
@@ -64,6 +136,7 @@ const StepViewer = (() => {
 
       const part = new THREE.Group();
       part.name = m.name || '';
+      part.userData.group = m.groupName || '';
       part.add(new THREE.Mesh(g, material));
       part.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 30),
         new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35 })));
@@ -82,11 +155,13 @@ const StepViewer = (() => {
     const groups = new Map();
     for (const part of model.children) {
       const name = (part.name || '').trim();
-      const lower = name.toLowerCase();
+      const lower = (name + ' ' + (part.userData.group || '')).toLowerCase();
       const rule = rules.find(r => r.kws.some(k => k && lower.includes(k)));
       let label;
       if (rule) {
         label = rule.label;
+      } else if (part.userData.group) {
+        label = part.userData.group;
       } else {
         const word = (name.split(/[\s_\-:.]+/)[0] || '').replace(/\d+$/, '');
         label = word ? word.charAt(0).toUpperCase() + word.slice(1) : 'Other';
@@ -211,6 +286,8 @@ const StepViewer = (() => {
         status.textContent = 'Reading model…';
         await new Promise(r => setTimeout(r, 30));
         const result = await readStep(bytes);
+        nameFromTree(result);
+        try { applyStepColors(result, () => new TextDecoder().decode(bytes)); } catch (e) { /* keep default colors */ }
 
         const THREE = window.THREE;
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -264,6 +341,6 @@ const StepViewer = (() => {
     });
   }
 
-  return { init, buildModel, groupParts, buildPanel, frame };
+  return { init, buildModel, groupParts, buildPanel, frame, nameFromTree, applyStepColors };
 })();
 if (typeof module !== 'undefined') module.exports = StepViewer;

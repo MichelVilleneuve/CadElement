@@ -1,8 +1,8 @@
 ﻿{
   "folder": "CadElement.Stairs",
-  "name": "CadElement.Stairs - parametric multibody generator",
+  "name": "CadElement.Stairs",
   "type": "Visual Studio (C#/WPF)",
-  "description": "Build stairs with platform anf handrails.",
+  "description": "Parametric Multibody Generator",
   "date": "2026-11-23",
   "github": "https://github.com/michelvilleneuve/CadElement.Stairs",
   "thumbnail": "thumbnail.png",

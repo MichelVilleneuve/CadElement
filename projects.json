@@ -1,6 +1,7 @@
 ﻿{
   "projects": [
     "CadElement.Deck",
+    "CadElement.Drawing",
     "CadElement.Ladders",
     "CadElement.Stairs"
   ]

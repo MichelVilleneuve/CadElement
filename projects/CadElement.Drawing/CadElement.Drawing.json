@@ -1,0 +1,19 @@
+﻿{
+  "folder": "CadElement.Drawing",
+  "name": "CadElement.Drawing",
+  "type": "Visual Studio (C#/WPF)",
+  "description": "Drawings",
+  "date": "2026-11-28",
+  "github": "https://github.com/michelvilleneuve/CadElement.Drawing",
+  "thumbnail": "thumbnail.png",
+  "tech": [
+    "C#",
+    "WPF"
+  ],
+  "screenshots": [
+    "1.png",
+    "2.png"
+  ],
+  "fullDescription": "Drawings",
+  "features": []
+}
